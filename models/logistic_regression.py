@@ -6,9 +6,11 @@ def create_model(params):
     return LogisticRegression(
         C=params["C"],
         penalty=params["penalty"],
-        solver="liblinear" if params["penalty"] == "l1" else "lbfgs",
+        # solver="liblinear" if params["penalty"] == "l1" else "lbfgs",
+        solver="saga",
         max_iter=1000,
         random_state=1337,
+        n_jobs=-1,
     )
 
 

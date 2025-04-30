@@ -47,7 +47,7 @@ def optimize(model_module, X_train, y_train, cv=5, verbose=True):
         params = decode_solution(sol)
         model = model_module.create_model(params)
         score = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="accuracy"
+            model, X_train, y_train, cv=cv, scoring="accuracy", n_jobs=-1
         ).mean()
         return -score
 

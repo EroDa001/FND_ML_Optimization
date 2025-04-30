@@ -12,6 +12,8 @@ def create_model(params):
         use_label_encoder=False,
         eval_metric="logloss",
         random_state=1337,
+        n_jobs=-1,
+        tree_method="hist",
     )
 
 
