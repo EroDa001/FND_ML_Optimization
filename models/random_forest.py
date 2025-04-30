@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score
 def create_model(params):
     return RandomForestClassifier(
         n_estimators=int(params["n_estimators"]),
-        max_depth=int(params["max_depth"]),
+        max_depth=None if params["max_depth"] is None else int(params["max_depth"]),
         min_samples_split=int(params["min_samples_split"]),
         min_samples_leaf=int(params["min_samples_leaf"]),
         random_state=1337,
