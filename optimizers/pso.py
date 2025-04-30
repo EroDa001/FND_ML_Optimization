@@ -3,6 +3,9 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sko.PSO import PSO
 
+from experiments.config import (PSO_C1, PSO_C2, PSO_MAX_ITER, PSO_POP_SIZE,
+                                PSO_W)
+
 
 def optimize(model_module, X_train, y_train, cv=5, verbose=True):
     space = model_module.param_space()
@@ -50,7 +53,15 @@ def optimize(model_module, X_train, y_train, cv=5, verbose=True):
         return -score
 
     pso = PSO(
-        func=fitness, dim=dim, pop=30, max_iter=100, lb=lb, ub=ub, w=0.8, c1=0.5, c2=0.5
+        func=fitness,
+        dim=dim,
+        pop=PSO_POP_SIZE,
+        max_iter=PSO_MAX_ITER,
+        lb=lb,
+        ub=ub,
+        w=PSO_W,
+        c1=PSO_C1,
+        c2=PSO_C2,
     )
 
     best_x, best_y = pso.run()

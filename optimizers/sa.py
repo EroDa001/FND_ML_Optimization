@@ -3,6 +3,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sko.SA import SA
 
+from experiments.config import SA_L, SA_MAX_ITER, SA_T_MAX, SA_T_MIN
+
 
 def optimize(model_module, X_train, y_train, cv=5, verbose=True):
     space = model_module.param_space()
@@ -52,10 +54,10 @@ def optimize(model_module, X_train, y_train, cv=5, verbose=True):
     sa = SA(
         func=objective,
         x0=np.array([(lb[i] + ub[i]) / 2 for i in range(dim)]),  # initial point
-        T_max=1.0,
-        T_min=1e-3,
-        L=40,
-        max_iter=200,
+        T_max=SA_T_MAX,
+        T_min=SA_T_MIN,
+        L=SA_L,
+        max_iter=SA_MAX_ITER,
         lb=lb,
         ub=ub,
     )

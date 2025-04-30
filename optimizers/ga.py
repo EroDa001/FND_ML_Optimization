@@ -2,6 +2,8 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import LabelEncoder
 from sko.GA import GA
 
+from experiments.config import GA_MAX_ITER, GA_MUTATION_RATE, GA_POP_SIZE
+
 
 def optimize(model_module, X_train, y_train, cv=5, verbose=True):
     space = model_module.param_space()
@@ -52,9 +54,9 @@ def optimize(model_module, X_train, y_train, cv=5, verbose=True):
     ga = GA(
         func=fitness,
         n_dim=dim,
-        size_pop=20,
-        max_iter=100,
-        prob_mut=0.1,
+        size_pop=GA_POP_SIZE,
+        max_iter=GA_MAX_ITER,
+        prob_mut=GA_MUTATION_RATE,
         lb=lb,
         ub=ub,
         precision=1e-4,
