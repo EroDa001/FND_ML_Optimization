@@ -4,21 +4,25 @@ from datetime import datetime
 import pandas as pd
 
 from experiments.config import CV_FOLDS
-from models import logistic_regression, random_forest, svm, xgb
+from models import (adaboost, knn, logistic_regression, mlp, naive_bayes,
+                    random_forest, svm, xgb)
 from optimizers import ga, pso, sa
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
 
 def run_experiments():
-    X_train, X_val, y_train, y_val = load_data()
+    X_train, y_train, X_val, y_val = load_data()
 
     models = [
         ("SVM", svm),
         ("RandomForest", random_forest),
         ("XGBoost", xgb),
         ("LogisticRegression", logistic_regression),
-        # ("GCForest", gcforest),
+        ("AdaBoost", adaboost),
+        ("KNN", knn),
+        ("MLP", mlp),
+        ("NaiveBayes", naive_bayes),
     ]
     optimizers = [
         ("Baseline", None),
@@ -50,7 +54,7 @@ def run_experiments():
             {
                 "Model": model_name,
                 "Optimizer": "Baseline",
-                "Accuracy": baseline_acc,
+                # "Accuracy": baseline_acc,
                 **base_metrics,
                 "Params": model_module.default_params(),
                 "Time": elapsed,
@@ -78,7 +82,6 @@ def run_experiments():
                 {
                     "Model": model_name,
                     "Optimizer": opt_name,
-                    "Accuracy": val_acc,
                     **m,
                     "Params": best_params,
                     "Time": elapsed,
@@ -86,7 +89,7 @@ def run_experiments():
             )
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"results/experiment_results_{timestamp}.csv"
+    output_file = f"results/logs/experiment_results_{timestamp}.csv"
 
     df_results = pd.DataFrame(results)
     df_results.to_csv(output_file, index=False)
