@@ -1,6 +1,8 @@
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC
 
+from experiments.config import RANDOM_SEED
+
 
 def create_model(params):
     model = SVC(
@@ -8,7 +10,7 @@ def create_model(params):
         gamma=params["gamma"],
         kernel=params["kernel"],
         probability=True,
-        random_state=1337,
+        random_state=RANDOM_SEED,
     )
     return model
 

@@ -1,6 +1,8 @@
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
+from experiments.config import RANDOM_SEED
+
 
 def create_model(params):
     return RandomForestClassifier(
@@ -8,7 +10,7 @@ def create_model(params):
         max_depth=None if params["max_depth"] is None else int(params["max_depth"]),
         min_samples_split=int(params["min_samples_split"]),
         min_samples_leaf=int(params["min_samples_leaf"]),
-        random_state=1337,
+        random_state=RANDOM_SEED,
         n_jobs=-1,
     )
 
@@ -24,10 +26,26 @@ def default_params():
 
 def param_space():
     return [
-        {"name": "n_estimators", "type": "continuous", "bounds": [50, 300]},
-        {"name": "max_depth", "type": "continuous", "bounds": [5, 50]},
-        {"name": "min_samples_split", "type": "continuous", "bounds": [2, 10]},
-        {"name": "min_samples_leaf", "type": "continuous", "bounds": [1, 10]},
+        {
+            "name": "n_estimators",
+            "type": "categorical",
+            "categories": list(range(50, 501, 50)),
+        },
+        {
+            "name": "max_depth",
+            "type": "categorical",
+            "categories": list(range(5, 51, 5)),
+        },
+        {
+            "name": "min_samples_split",
+            "type": "categorical",
+            "categories": list(range(2, 11)),
+        },
+        {
+            "name": "min_samples_leaf",
+            "type": "categorical",
+            "categories": list(range(1, 11)),
+        },
     ]
 
 

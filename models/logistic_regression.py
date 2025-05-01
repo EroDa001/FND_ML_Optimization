@@ -1,6 +1,8 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
+from experiments.config import RANDOM_SEED
+
 
 def create_model(params):
     return LogisticRegression(
@@ -9,7 +11,7 @@ def create_model(params):
         # solver="liblinear" if params["penalty"] == "l1" else "lbfgs",
         solver="saga",
         max_iter=1000,
-        random_state=1337,
+        random_state=RANDOM_SEED,
         n_jobs=-1,
     )
 
