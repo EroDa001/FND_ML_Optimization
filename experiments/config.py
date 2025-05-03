@@ -20,4 +20,7 @@ SA_T_MIN = 1e-3
 SA_L = 40
 SA_MAX_ITER = 200
 
+TWO_POP_SIZE = 20
+TWO_MAX_ITER = 50
+
 RESULTS_DIR = "results"
