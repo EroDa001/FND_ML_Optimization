@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from experiments.config import RANDOM_SEED
+from experiments.config import RANDOM_SEED, TEST_SIZE, VAL_SIZE
 
 
 def load_data():
@@ -49,11 +49,12 @@ def load_data():
     X = dataframe.drop(columns=[target])
     y = dataframe[target]
 
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_scaled, y, test_size=0.2, random_state=RANDOM_SEED, stratify=y
+    X_temp, X_test, y_temp, y_test = train_test_split(
+        X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y
     )
 
-    return X_train, y_train, X_val, y_val
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_temp, y_temp, test_size=VAL_SIZE, random_state=RANDOM_SEED, stratify=y_temp
+    )
+
+    return X_train, y_train, X_val, y_val, X_test, y_test

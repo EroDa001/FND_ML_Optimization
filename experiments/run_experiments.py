@@ -3,16 +3,15 @@ from datetime import datetime
 
 import pandas as pd
 
-from experiments.config import CV_FOLDS
 from models import (adaboost, knn, logistic_regression, mlp, naive_bayes,
                     random_forest, svm, xgb)
-from optimizers import ga, pso, sa
+from optimizers import ga, pso, sa, tow
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
 
 def run_experiments():
-    X_train, y_train, X_val, y_val = load_data()
+    X_train, y_train, X_val, y_val, X_test, y_test = load_data()
 
     models = [
         ("SVM", svm),
@@ -29,64 +28,79 @@ def run_experiments():
         ("GA", ga.optimize),
         ("PSO", pso.optimize),
         ("SA", sa.optimize),
+        ("TOW", tow.optimize),
     ]
 
     results = []
 
     for model_name, model_module in models:
+
         print(f"Running {model_name} with default parameters, no optimizer...")
-        start_time = time.time()
+
+        time_start = time.time()
         baseline_model = model_module.create_model(model_module.default_params())
         baseline_model.fit(X_train, y_train)
-        baseline_acc = model_module.evaluate(baseline_model, X_val, y_val)
-        elapsed = time.time() - start_time
+        time_taken = time.time()
+        time_taken = time_taken - time_start
 
-        y_pred = baseline_model.predict(X_val)
-        y_prob = (
-            baseline_model.predict_proba(X_val)
-            if hasattr(baseline_model, "predict_proba")
-            else None
+        print(
+            f"Running {model_name} with default parameters, no optimizer... done in {time_taken:.2f} seconds"
         )
 
-        base_metrics = compute_metrics(y_val, y_pred, y_prob)
-
-        results.append(
-            {
-                "Model": model_name,
-                "Optimizer": "Baseline",
-                # "Accuracy": baseline_acc,
-                **base_metrics,
-                "Params": model_module.default_params(),
-                "Time": elapsed,
-            }
-        )
-
-        for opt_name, optimizer in optimizers[1:]:
-            print(f"Running {model_name} with {opt_name} optimizer...")
-            start_time = time.time()
-            best_model, best_params, best_score = optimizer(
-                model_module, X_train, y_train, cv=CV_FOLDS
-            )
-            elapsed = time.time() - start_time
-            val_acc = model_module.evaluate(best_model, X_val, y_val)
-
-            y_pred = best_model.predict(X_val)
+        for split_name, X, y in [
+            ("Train", X_train, y_train),
+            ("Test", X_test, y_test),
+        ]:
+            y_pred = baseline_model.predict(X)
             y_prob = (
-                best_model.predict_proba(X_val)
-                if hasattr(best_model, "predict_proba")
+                baseline_model.predict_proba(X)
+                if hasattr(baseline_model, "predict_proba")
                 else None
             )
-            m = compute_metrics(y_val, y_pred, y_prob)
-
+            mets = compute_metrics(y, y_pred, y_prob)
             results.append(
                 {
                     "Model": model_name,
-                    "Optimizer": opt_name,
-                    **m,
-                    "Params": best_params,
-                    "Time": elapsed,
+                    "Optimizer": "Baseline",
+                    "Split": split_name,
+                    **mets,
+                    "Time": time_taken,
+                    "Params": model_module.default_params(),
                 }
             )
+
+        for opt_name, optimizer in optimizers[1:]:
+            print(f"Running {model_name} with {opt_name} optimizer...")
+            time_start = time.time()
+            best_model, best_params, best_score = optimizer(
+                model_module, X_train, y_train, X_val, y_val
+            )
+            time_end = time.time()
+            time_taken = time_end - time_start
+            print(
+                f"Running {model_name} with {opt_name} optimizer... done in {time_taken:.2f} seconds"
+            )
+            for split_name, X, y in [
+                ("Train", X_train, y_train),
+                ("Test", X_test, y_test),
+            ]:
+                y_pred = baseline_model.predict(X)
+                y_prob = (
+                    baseline_model.predict_proba(X)
+                    if hasattr(best_model, "predict_proba")
+                    else None
+                )
+                mets = compute_metrics(y, y_pred, y_prob)
+                results.append(
+                    {
+                        "Model": model_name,
+                        "Optimizer": opt_name,
+                        "Split": split_name,
+                        **mets,
+                        "Time": time_taken,
+                        "Params": best_params,
+                    }
+                )
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = f"results/logs/experiment_results_{timestamp}.csv"
