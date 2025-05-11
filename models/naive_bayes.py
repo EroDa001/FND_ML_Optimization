@@ -1,10 +1,12 @@
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import GaussianNB
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 def create_model(params):
     model = GaussianNB(var_smoothing=params["var_smoothing"])
-    return model
+    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
 
 
 def default_params():

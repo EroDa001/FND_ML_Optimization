@@ -1,5 +1,7 @@
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 def create_model(params):
@@ -9,7 +11,7 @@ def create_model(params):
         weights=params["weights"],
         n_jobs=-1,
     )
-    return model
+    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
 
 
 def default_params():
@@ -18,7 +20,11 @@ def default_params():
 
 def param_space():
     return [
-        {"name": "n_neighbors", "type": "categorical", "categories": list(range(3, 18, 2))},
+        {
+            "name": "n_neighbors",
+            "type": "categorical",
+            "categories": list(range(3, 18, 2)),
+        },
         {"name": "p", "type": "categorical", "categories": list(range(1, 6, 1))},
         {
             "name": "weights",

@@ -1,19 +1,21 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from experiments.config import RANDOM_SEED
 
 
 def create_model(params):
-    return LogisticRegression(
+    model = LogisticRegression(
         C=params["C"],
         penalty=params["penalty"],
-        # solver="liblinear" if params["penalty"] == "l1" else "lbfgs",
         solver="saga",
-        max_iter=1000,
+        max_iter=10000,
         random_state=RANDOM_SEED,
-        n_jobs=-1,
+        n_jobs=4,
     )
+    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
 
 
 def default_params():

@@ -1,4 +1,6 @@
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 from experiments.config import RANDOM_SEED
@@ -12,7 +14,7 @@ def create_model(params):
         probability=True,
         random_state=RANDOM_SEED,
     )
-    return model
+    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
 
 
 def default_params():
@@ -21,8 +23,8 @@ def default_params():
 
 def param_space():
     return [
-        {"name": "C", "type": "continuous", "bounds": [0.1, 10]},
-        {"name": "gamma", "type": "continuous", "bounds": [0.0001, 1]},
+        {"name": "C", "type": "continuous", "bounds": [1e-1, 10]},
+        {"name": "gamma", "type": "continuous", "bounds": [1e-5, 1]},
         {
             "name": "kernel",
             "type": "categorical",

@@ -11,7 +11,6 @@ def create_model(params):
         learning_rate=params["learning_rate"],
         subsample=params["subsample"],
         colsample_bytree=params["colsample_bytree"],
-        use_label_encoder=False,
         eval_metric="logloss",
         random_state=RANDOM_SEED,
         n_jobs=-1,

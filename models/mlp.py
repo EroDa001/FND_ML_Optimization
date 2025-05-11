@@ -1,21 +1,22 @@
 from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from experiments.config import RANDOM_SEED
 
 
 def create_model(params):
     model = MLPClassifier(
-        # hidden_layer_sizes=(int(params["hidden_layer_sizes"]),),
         hidden_layer_sizes=tuple(params["hidden_layer_sizes"]),
         activation=params["activation"],
         alpha=params["alpha"],
         learning_rate_init=params["learning_rate_init"],
-        max_iter=200,
+        max_iter=2000,
         early_stopping=True,
         random_state=RANDOM_SEED,
     )
-    return model
+    return Pipeline([('scaler', StandardScaler()), ('estimator', model)])
 
 
 def default_params():
