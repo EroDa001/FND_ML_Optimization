@@ -2,29 +2,19 @@ import numpy as np
 from sklearn.model_selection import cross_val_score, train_test_split
 from sko.PSO import PSO
 
-from experiments.config import (CV_FOLDS, PSO_C1, PSO_C2, PSO_MAX_ITER,
-                                PSO_POP_SIZE, PSO_W, RANDOM_SEED,
-                                TRAIN_FRACTION)
+from experiments.config import (PSO_C1, PSO_C2, PSO_MAX_ITER, PSO_POP_SIZE,
+                                PSO_W, RANDOM_SEED)
 
 
 def optimize(
-    model_module,
+    module,
     X_train,
     y_train,
-    train_fraction=TRAIN_FRACTION,
-    cv=CV_FOLDS,
+    X_val,
+    y_val,
     verbose=True,
 ):
-    space = model_module.param_space()
-
-    if train_fraction < 1.0:
-        X_train, _, y_train, _ = train_test_split(
-            X_train,
-            y_train,
-            train_size=train_fraction,
-            stratify=y_train,
-            random_state=RANDOM_SEED,
-        )
+    space = module.param_space()
 
     dim = len(space)
     lb = []
@@ -54,33 +44,32 @@ def optimize(
 
     def fitness(solution):
         params = decode_solution(solution)
-        model = model_module.create_model(params)
-        score = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="accuracy", n_jobs=-1
-        ).mean()
+        model = module.create_model(params)
+        model.fit(X_train, y_train)
+        score = model.score(X_val, y_val)
         return -score  # PSO minimizes
 
     pso = PSO(
         func=fitness,
         dim=dim,
-        pop=PSO_POP_SIZE,
-        max_iter=PSO_MAX_ITER,
         lb=lb,
         ub=ub,
+        pop=PSO_POP_SIZE,
+        max_iter=PSO_MAX_ITER,
         w=PSO_W,
         c1=PSO_C1,
         c2=PSO_C2,
     )
 
-    best_x, best_y = pso.run()
-    best_params = decode_solution(best_x)
-    best_model = model_module.create_model(best_params)
+    best_sol, best_score = pso.run()
+    best_params = decode_solution(best_sol)
+    best_model = module.create_model(best_params)
     best_model.fit(X_train, y_train)
 
     if verbose:
         print(
             f"Best params (PSO): { {k: f"{v:.2e}" if isinstance(v, np.float64) else v for k, v in best_params.items()} }"
         )
-        print(f"Best CV accuracy: {-best_y.item():.4f}")
+        print(f"Best CV accuracy: {-best_score.item():.4f}")
 
-    return best_model, best_params, -best_y
+    return best_model, best_params, -best_score
