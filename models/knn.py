@@ -11,7 +11,7 @@ def create_model(params):
         weights=params["weights"],
         n_jobs=-1,
     )
-    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
+    return Pipeline([("scaler", StandardScaler(with_mean=False)), ("estimator", model)])
 
 
 def default_params():

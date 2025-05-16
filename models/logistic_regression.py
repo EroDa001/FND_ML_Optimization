@@ -15,7 +15,7 @@ def create_model(params):
         random_state=RANDOM_SEED,
         n_jobs=4,
     )
-    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
+    return Pipeline([("scaler", StandardScaler(with_mean=False)), ("estimator", model)])
 
 
 def default_params():

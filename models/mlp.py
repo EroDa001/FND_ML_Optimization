@@ -16,7 +16,7 @@ def create_model(params):
         early_stopping=True,
         random_state=RANDOM_SEED,
     )
-    return Pipeline([('scaler', StandardScaler()), ('estimator', model)])
+    return Pipeline([('scaler', StandardScaler(with_mean=False)), ('estimator', model)])
 
 
 def default_params():

@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 def create_model(params):
     model = GaussianNB(var_smoothing=params["var_smoothing"])
-    return Pipeline([("scaler", StandardScaler()), ("estimator", model)])
+    return Pipeline([("scaler", StandardScaler(with_mean=False)), ("estimator", model)])
 
 
 def default_params():
