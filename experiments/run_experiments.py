@@ -22,15 +22,6 @@ def run_experiments():
         X_final_test,
         y_final_test,
     ) = load_data(dataset)
-    # print shapes of sets
-    print(f"X_final_train shape: {X_final_train.shape}")
-    print(f"y_final_train shape: {y_final_train.shape}")
-    print(f"X_opt_train shape: {X_opt_train.shape}")
-    print(f"y_opt_train shape: {y_opt_train.shape}")
-    print(f"X_opt_val shape: {X_opt_val.shape}")
-    print(f"y_opt_val shape: {y_opt_val.shape}")
-    print(f"X_final_test shape: {X_final_test.shape}")
-    print(f"y_final_test shape: {y_final_test.shape}")
 
     models = [
         ("SVM", svm),
