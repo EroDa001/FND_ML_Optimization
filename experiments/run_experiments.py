@@ -4,17 +4,37 @@ from datetime import datetime
 import pandas as pd
 
 from models import (adaboost, knn, logistic_regression, mlp, naive_bayes,
-                    random_forest, svm, xgb)
+                    random_forest, sgd, svm, xgb)
 from optimizers import ga, pso, sa, tow
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
 
 def run_experiments():
-    X_train, y_train, X_val, y_val, X_test, y_test = load_data()
+    dataset = "weibo"
+    (
+        X_final_train,
+        y_final_train,
+        X_opt_train,
+        y_opt_train,
+        X_opt_val,
+        y_opt_val,
+        X_final_test,
+        y_final_test,
+    ) = load_data(dataset)
+    # print shapes of sets
+    print(f"X_final_train shape: {X_final_train.shape}")
+    print(f"y_final_train shape: {y_final_train.shape}")
+    print(f"X_opt_train shape: {X_opt_train.shape}")
+    print(f"y_opt_train shape: {y_opt_train.shape}")
+    print(f"X_opt_val shape: {X_opt_val.shape}")
+    print(f"y_opt_val shape: {y_opt_val.shape}")
+    print(f"X_final_test shape: {X_final_test.shape}")
+    print(f"y_final_test shape: {y_final_test.shape}")
 
     models = [
         ("SVM", svm),
+        ("SGD", sgd),
         ("RandomForest", random_forest),
         ("XGBoost", xgb),
         ("LogisticRegression", logistic_regression),
@@ -39,7 +59,7 @@ def run_experiments():
 
         time_start = time.time()
         baseline_model = model_module.create_model(model_module.default_params())
-        baseline_model.fit(X_train, y_train)
+        baseline_model.fit(X_opt_train, y_opt_train)
         time_taken = time.time()
         time_taken = time_taken - time_start
 
@@ -48,8 +68,8 @@ def run_experiments():
         )
 
         for split_name, X, y in [
-            ("Train", X_train, y_train),
-            ("Test", X_test, y_test),
+            ("Train", X_opt_train, y_opt_train),
+            ("Test", X_final_test, y_final_test),
         ]:
             y_pred = baseline_model.predict(X)
             y_prob = (
@@ -61,6 +81,7 @@ def run_experiments():
             results.append(
                 {
                     "Model": model_name,
+                    "Dataset": dataset,
                     "Optimizer": "Baseline",
                     "Split": split_name,
                     **mets,
@@ -73,7 +94,7 @@ def run_experiments():
             print(f"Running {model_name} with {opt_name} optimizer...")
             time_start = time.time()
             best_model, best_params, best_score = optimizer(
-                model_module, X_train, y_train, X_val, y_val
+                model_module, X_opt_train, y_opt_train, X_opt_val, y_opt_val
             )
             time_end = time.time()
             time_taken = time_end - time_start
@@ -81,12 +102,12 @@ def run_experiments():
                 f"Running {model_name} with {opt_name} optimizer... done in {time_taken:.2f} seconds"
             )
             for split_name, X, y in [
-                ("Train", X_train, y_train),
-                ("Test", X_test, y_test),
+                ("Train", X_opt_train, y_opt_train),
+                ("Test", X_final_test, y_final_test),
             ]:
-                y_pred = baseline_model.predict(X)
+                y_pred = best_model.predict(X)
                 y_prob = (
-                    baseline_model.predict_proba(X)
+                    best_model.predict_proba(X)
                     if hasattr(best_model, "predict_proba")
                     else None
                 )
@@ -94,6 +115,7 @@ def run_experiments():
                 results.append(
                     {
                         "Model": model_name,
+                        "Dataset": dataset,
                         "Optimizer": opt_name,
                         "Split": split_name,
                         **mets,
