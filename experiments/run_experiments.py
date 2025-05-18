@@ -1,11 +1,15 @@
 import time
 from datetime import datetime
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pandas as pd
 
-from models import (adaboost, knn, logistic_regression, mlp, naive_bayes,
-                    random_forest, sgd, svm, xgb)
-from optimizers import ga, pso, sa, tow
+from models import (DeepForest, logistic_regression, naive_bayes,
+                    random_forest, CatBoost, svm, xgb)
+from optimizers import gbo, dgo
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
@@ -25,19 +29,17 @@ def run_experiments():
 
     models = [
         ("SVM", svm),
-        ("SGD", sgd),
+        ("CatBoost", CatBoost),
         ("RandomForest", random_forest),
         ("XGBoost", xgb),
         ("LogisticRegression", logistic_regression),
-        ("AdaBoost", adaboost),
-        ("KNN", knn),
-        ("MLP", mlp),
+        ("DeepForest", DeepForest),
         ("NaiveBayes", naive_bayes),
     ]
     optimizers = [
         ("Baseline", None),
-        ("GA", ga.optimize),
-        ("PSO", pso.optimize),
+        ("DGO", dgo.optimize),
+        ("GBO", gbo.optimize),
         ("SA", sa.optimize),
         ("TOW", tow.optimize),
     ]
