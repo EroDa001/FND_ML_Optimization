@@ -59,9 +59,8 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
     best_model.fit(X_train, y_train)
 
     if verbose:
-        print(
-            f"Best params (GA): { {k: f"{v:.2e}" if isinstance(v, np.float64) else v for k, v in best_params.items()} }"
-        )
+        print("Best params (PSO):", {k: f"{v:.2e}" if isinstance(v, np.float64) else v for k, v in best_params.items()})
+
         print(f"Best CV accuracy: {best_score.item():.4f}")
 
     return best_model, best_params, best_score

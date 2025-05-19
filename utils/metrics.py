@@ -36,11 +36,13 @@ def compute_metrics(y_true, y_pred, y_prob=None, average="binary"):
         metrics["FalseNegative"] = fn
 
     if y_prob is not None:
-        metrics["ROC_AUC"] = round(roc_auc_score(y_true, y_prob[:, 1]), ROUND)
-        metrics["AireSousCourbeROC"] = round(auc, ROUND)
+        roc_auc = roc_auc_score(y_true, y_prob[:, 1])
+        metrics["ROC_AUC"] = round(roc_auc, ROUND)
+        metrics["AireSousCourbeROC"] = metrics["ROC_AUC"]
         metrics["LogLoss"] = round(log_loss(y_true, y_prob), ROUND)
 
-    return metrics
+
+        return metrics
 
 
 def print_classification_report(y_true, y_pred, target_names=None):

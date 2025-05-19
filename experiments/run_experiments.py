@@ -7,15 +7,16 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pandas as pd
 
-from models import (DeepForest, logistic_regression, naive_bayes,
-                    random_forest, CatBoost, svm, xgb)
-from optimizers import gbo, dgo
+from models import ( logistic_regression, naive_bayes,
+                    random_forest, svm, #xgb , deepforest ,catboost
+                    )
+from optimizers import gbo, dgo, saro , ga #, pso
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
 
 def run_experiments():
-    dataset = "weibo"
+    dataset = "Data1"
     (
         X_final_train,
         y_final_train,
@@ -29,26 +30,26 @@ def run_experiments():
 
     models = [
         ("SVM", svm),
-        ("CatBoost", CatBoost),
+        #("CatBoost", catboost),
         ("RandomForest", random_forest),
-        ("XGBoost", xgb),
+        #("XGBoost", xgb),
         ("LogisticRegression", logistic_regression),
-        ("DeepForest", DeepForest),
+        #("DeepForest", deepforest),
         ("NaiveBayes", naive_bayes),
     ]
     optimizers = [
         ("Baseline", None),
         ("DGO", dgo.optimize),
+        ("GA", ga.optimize),
         ("GBO", gbo.optimize),
-        ("SA", sa.optimize),
-        ("TOW", tow.optimize),
+        ("SARO", saro.optimize),
     ]
 
     results = []
 
     for model_name, model_module in models:
 
-        print(f"Running {model_name} with default parameters, no optimizer...")
+       """  print(f"Running {model_name} with default parameters, no optimizer...")
 
         time_start = time.time()
         baseline_model = model_module.create_model(model_module.default_params())
@@ -71,6 +72,7 @@ def run_experiments():
                 else None
             )
             mets = compute_metrics(y, y_pred, y_prob)
+            print(f"{model_name} | Baseline | {split_name} metrics: {mets}")
             results.append(
                 {
                     "Model": model_name,
@@ -82,8 +84,9 @@ def run_experiments():
                     "Params": model_module.default_params(),
                 }
             )
+ """
 
-        for opt_name, optimizer in optimizers[1:]:
+    for opt_name, optimizer in optimizers[1:]:
             print(f"Running {model_name} with {opt_name} optimizer...")
             time_start = time.time()
             best_model, best_params, best_score = optimizer(

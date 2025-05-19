@@ -1,9 +1,7 @@
 import numpy as np
 from sklearn.metrics import f1_score 
 
-from experiments.config import DGO_MAX_ITER,
-DGO_POP_SIZE,
-DGO_DICE_SIDES
+from experiments.config import DGO_MAX_ITER , DGO_POP_SIZE , DGO_DICE_SIDES
 
 def optimize(
     module,

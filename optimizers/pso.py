@@ -67,9 +67,8 @@ def optimize(
     best_model.fit(X_train, y_train)
 
     if verbose:
-        print(
-            f"Best params (PSO): { {k: f"{v:.2e}" if isinstance(v, np.float64) else v for k, v in best_params.items()} }"
-        )
+        print("Best params (PSO):", {k: f"{v:.2e}" if isinstance(v, np.float64) else v for k, v in best_params.items()})
+
         print(f"Best CV accuracy: {-best_score.item():.4f}")
 
     return best_model, best_params, -best_score

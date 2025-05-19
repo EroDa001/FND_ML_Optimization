@@ -1,19 +1,22 @@
 import os
+import sys
 
 import kagglehub
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from experiments.config import RANDOM_SEED, TEST_SIZE, VAL_SIZE
-from utils import instagram, weibo
+from utils import Data1
 
 
 def load_data(name):
-    assert name in ["instagram", "weibo"], "Dataset not found"
+    assert name in ["instagram", "Data1"], "Dataset not found"
     if name == "instagram":
         X, y = instagram.load_data()
     else:
-        X, y, vectorizer = weibo.load_data()
+        X, y = Data1.load_data()
 
     X_temp, X_final_test, y_temp, y_final_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y

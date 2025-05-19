@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from experiments.config import SARO_EPOCHS ,SARO_POP_SIZE
 
 import numpy as np
@@ -51,7 +55,7 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         epoch=SARO_EPOCHS, 
         pop_size=SARO_POP_SIZE, 
         se=0.5, 
-        mu=15
+        mu=7
         )
 
     best = model.solve(problem)
