@@ -1,21 +1,20 @@
 from sklearn.metrics import accuracy_score
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
 
 def create_model(params):
-    model = GaussianNB(var_smoothing=params["var_smoothing"])
-    return Pipeline([("scaler", StandardScaler(with_mean=False)), ("estimator", model)])
+    model = MultinomialNB(alpha=params["alpha"])
+    return Pipeline([("estimator", model)])
 
 
 def default_params():
-    return {"var_smoothing": 1e-9}
+    return {"alpha": 1e-3}
 
 
 def param_space():
     return [
-        {"name": "var_smoothing", "type": "continuous", "bounds": [1e-12, 1e-6]},
+        {"name": "alpha", "type": "continuous", "bounds": [1e-6, 1.0]},
     ]
 
 

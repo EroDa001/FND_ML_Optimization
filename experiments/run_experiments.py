@@ -29,27 +29,27 @@ def run_experiments():
     ) = load_data(dataset)
 
     models = [
-        ("SVM", svm),
+        #("SVM", svm),
         #("CatBoost", catboost),
-        ("RandomForest", random_forest),
+        #("RandomForest", random_forest),
         #("XGBoost", xgb),
-        ("LogisticRegression", logistic_regression),
+        #("LogisticRegression", logistic_regression),
         #("DeepForest", deepforest),
         ("NaiveBayes", naive_bayes),
     ]
     optimizers = [
         ("Baseline", None),
         ("DGO", dgo.optimize),
-        ("GA", ga.optimize),
-        ("GBO", gbo.optimize),
-        ("SARO", saro.optimize),
+        #("GA", ga.optimize),
+        #("GBO", gbo.optimize),
+        #("SARO", saro.optimize),
     ]
 
     results = []
 
     for model_name, model_module in models:
 
-       """  print(f"Running {model_name} with default parameters, no optimizer...")
+        print(f"Running {model_name} with default parameters, no optimizer...")
 
         time_start = time.time()
         baseline_model = model_module.create_model(model_module.default_params())
@@ -84,9 +84,9 @@ def run_experiments():
                     "Params": model_module.default_params(),
                 }
             )
- """
 
-    for opt_name, optimizer in optimizers[1:]:
+
+        for opt_name, optimizer in optimizers[1:]:
             print(f"Running {model_name} with {opt_name} optimizer...")
             time_start = time.time()
             best_model, best_params, best_score = optimizer(
@@ -119,6 +119,7 @@ def run_experiments():
                         "Params": best_params,
                     }
                 )
+
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = f"results/logs/experiment_results_{timestamp}.csv"
