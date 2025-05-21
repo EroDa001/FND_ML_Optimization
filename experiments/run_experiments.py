@@ -29,7 +29,7 @@ def run_experiments():
     ) = load_data(dataset)
 
     models = [
-        #("SVM", svm),
+        ("SVM", svm),
         #("CatBoost", catboost),
         #("RandomForest", random_forest),
         #("XGBoost", xgb),
@@ -39,10 +39,10 @@ def run_experiments():
     ]
     optimizers = [
         ("Baseline", None),
-        ("DGO", dgo.optimize),
+        #("DGO", dgo.optimize),
         #("GA", ga.optimize),
         #("GBO", gbo.optimize),
-        #("SARO", saro.optimize),
+        ("SARO", saro.optimize),
     ]
 
     results = []

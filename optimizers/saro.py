@@ -54,8 +54,8 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
     model = SARO.DevSARO(
         epoch=SARO_EPOCHS, 
         pop_size=SARO_POP_SIZE, 
-        se=0.5, 
-        mu=7
+        se=0.9, 
+        mu=11 
         )
 
     best = model.solve(problem)
