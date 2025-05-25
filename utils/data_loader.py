@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from experiments.config import RANDOM_SEED, TEST_SIZE, VAL_SIZE
-from utils import Data1
+from utils import Data1 , instagram
 
 
 def load_data(name):

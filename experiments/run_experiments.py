@@ -40,9 +40,9 @@ def run_experiments():
     optimizers = [
         ("Baseline", None),
         #("DGO", dgo.optimize),
-        #("GA", ga.optimize),
-        #("GBO", gbo.optimize),
-        ("SARO", saro.optimize),
+        ("GA", ga.optimize),
+        ("GBO", gbo.optimize),
+        #("SARO", saro.optimize),
     ]
 
     results = []
