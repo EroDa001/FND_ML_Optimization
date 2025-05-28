@@ -1,101 +1,103 @@
 import numpy as np
-from mealpy import Optimizer, FloatVar
-from sklearn.metrics import accuracy_score
-
-
-class HideAndSeekOptimizer(Optimizer):
-    def __init__(self, epoch=50, pop_size=20, seeker_ratio=0.3, p_replace=0.1, **kwargs):
-        super().__init__(**kwargs)
-        self.epoch = self.validator.check_int("epoch", epoch, [1, 100000])
-        self.pop_size = self.validator.check_int("pop_size", pop_size, [10, 10000])
-        self.seeker_ratio = self.validator.check_float("seeker_ratio", seeker_ratio, (0, 1))
-        self.p_replace = self.validator.check_float("p_replace", p_replace, (0, 1))
-        self.sort_flag = True
-
-    def initialize_variables(self):
-        self.n_seekers = int(self.pop_size * self.seeker_ratio)
-        self.n_hiders = self.pop_size - self.n_seekers
-        self.space = self.problem.ub - self.problem.lb
-
-    def initialization(self):
-        if self.pop is None:
-            self.pop = self.generate_population(self.pop_size)
-
-    def evolve(self, epoch):
-        epsilon = 1.0 - epoch / self.epoch
-
-        for idx in range(self.n_hiders, self.pop_size):
-            if self.generator.uniform() < self.p_replace:
-                self.pop[idx] = self.generate_agent()
-
-        best_hider = self.pop[0]
-        for i in range(self.n_seekers):
-            new_pos = self.pop[i].solution + epsilon * self.space * self.generator.uniform(-1, 1)
-            new_pos = self.correct_solution(new_pos)
-            agent = self.generate_agent(new_pos)
-            if self.compare_target(agent.target, self.pop[i].target, self.problem.minmax):
-                self.pop[i] = agent
-
-        for i in range(self.n_seekers, self.pop_size):
-            direction = self.generator.normal(0, 1, self.problem.n_dims)
-            new_pos = self.pop[i].solution + epsilon * self.space * direction
-            new_pos = self.correct_solution(new_pos)
-            agent = self.generate_agent(new_pos)
-            if self.compare_target(agent.target, self.pop[i].target, self.problem.minmax):
-                self.pop[i] = agent
-
+from sklearn.base import clone
+from experiments.config import GB_MAX_ITER ,GB_POP_SIZE 
 
 def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
     space = module.param_space()
-    dim = len(space)
-    lb, ub = [], []
-    cat_category_lists = []
+    NT = 6  # number of groups
+    NP = 5  # number of schedules per group
+    max_seasons = 10
+    optimal_found = False
 
-    for param in space:
-        if param["type"] == "continuous":
-            lb.append(param["bounds"][0])
-            ub.append(param["bounds"][1])
-            cat_category_lists.append(None)
-        elif param["type"] == "categorical":
-            lb.append(0)
-            ub.append(len(param["categories"]) - 1)
-            cat_category_lists.append(param["categories"])
+    groups = []
+    for i in range(NT):
+        schedules = []
+        for _ in range(NP):
+            individual = []
+            for param in space:
+                if param['type'] == 'continuous':
+                    individual.append(np.random.uniform(*param['bounds']))
+                elif param['type'] == 'categorical':
+                    individual.append(np.random.randint(len(param['categories'])))
+            schedules.append(individual)
+        training_fn = np.random.choice(['2opt', 'insertion', 'swap', 'ox'])
+        groups.append({
+            'schedules': schedules,
+            'training': training_fn,
+            'points': 0,
+            'captain': None,
+            'strength': None
+        })
 
-    def decode_solution(solution):
-        params = {}
+    def decode_solution(sol):
+        decoded = {}
         for i, param in enumerate(space):
-            if param["type"] == "continuous":
-                params[param["name"]] = float(solution[i])
-            elif param["type"] == "categorical":
-                idx = int(round(solution[i]))
-                idx = max(0, min(idx, len(cat_category_lists[i]) - 1))
-                params[param["name"]] = cat_category_lists[i][idx]
-        return params
+            if param['type'] == 'continuous':
+                decoded[param['name']] = sol[i]
+            elif param['type'] == 'categorical':
+                decoded[param['name']] = param['categories'][int(round(sol[i]))]
+        return decoded
 
-    def fitness(solution):
-        params = decode_solution(solution)
+    def evaluate(sol):
+        params = decode_solution(sol)
         model = module.create_model(params)
         model.fit(X_train, y_train)
-        preds = model.predict(X_val)
-        return -accuracy_score(y_val, preds)  # Minimization
+        return 1.0 - model.score(X_val, y_val)  # minimization
 
-    problem = {
-        "obj_func": fitness,
-        "bounds": FloatVar(lb=lb, ub=ub),
-        "minmax": "min"
-    }
+    def train(schedule, method):
+        return schedule  # placeholder for training functions
 
-    model = HideAndSeekOptimizer(epoch=50, pop_size=20)
-    g_best = model.solve(problem)
+    for season in range(max_seasons):
+        print(f"Season {season + 1}/{max_seasons}")
 
-    best_params = decode_solution(g_best.solution)
+        for group_index, group in enumerate(groups):
+            scores = [evaluate(s) for s in group['schedules']]
+            for idx, score in enumerate(scores):
+                print(f"Group {group_index}, Player {idx}, Score: {1.0 - score:.4f}")
+            best_idx = np.argmin(scores)
+            group['captain'] = group['schedules'][best_idx]
+            group['strength'] = np.mean(scores)
+
+        for group in groups:
+            group['schedules'] = [train(s, group['training']) for s in group['schedules']]
+
+        for group in groups:
+            group['schedules'].sort(key=lambda s: evaluate(s))
+
+        for i in range(NT):
+            for j in range(i + 1, NT):
+                s1 = groups[i]['schedules'][0]
+                s2 = groups[j]['schedules'][0]
+                v1 = evaluate(s1)
+                v2 = evaluate(s2)
+                if abs(v1 - v2) < 1e-6:
+                    groups[i]['points'] += 1
+                    groups[j]['points'] += 1
+                elif v1 < v2:
+                    groups[i]['points'] += 3
+                else:
+                    groups[j]['points'] += 3
+
+        if optimal_found:
+            break
+
+        groups.sort(key=lambda g: (g['points'], g['strength']))
+        top = groups[:NT // 2]
+        bottom = groups[NT // 2:]
+        for i in range(len(top)):
+            bottom[i]['schedules'][:NP//2], top[i]['schedules'][:NP//2] = top[i]['schedules'][:NP//2], bottom[i]['schedules'][:NP//2]
+            bottom[i]['training'], top[i]['training'] = top[i]['training'], bottom[i]['training']
+
+        for group in groups:
+            group['points'] = 0
+
+    all_best = sorted([(evaluate(g['captain']), g['captain']) for g in groups], key=lambda x: x[0])
+    best_params = decode_solution(all_best[0][1])
     best_model = module.create_model(best_params)
     best_model.fit(X_train, y_train)
-    preds = best_model.predict(X_val)
-    score = accuracy_score(y_val, preds)
 
     if verbose:
-        print("Best params (HideAndSeek):", {k: f"{v:.2e}" if isinstance(v, float) else v for k, v in best_params.items()})
-        print(f"Best CV accuracy: {score:.4f}")
+        print("Best params (GBO-style):", {k: f"{v:.2e}" if isinstance(v, float) else v for k, v in best_params.items()})
+        print(f"Best CV error: {all_best[0][0]:.4f}")
 
-    return best_model, best_params, score
+    return best_model, best_params, 1.0 - all_best[0][0]
