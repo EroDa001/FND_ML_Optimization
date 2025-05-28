@@ -1,5 +1,3 @@
-import kagglehub
-import os
 import pandas as pd
 import numpy as np
 import re
@@ -26,7 +24,7 @@ def clean_text(text):
 def vectorize_texts(texts):
     def identity_tokenizer(text):
         return text.split()
-
+    
     vectorizer = TfidfVectorizer(
         tokenizer=identity_tokenizer,
         use_idf=True,
@@ -38,26 +36,29 @@ def vectorize_texts(texts):
     return X, vectorizer
 
 def load_data():
-    path = kagglehub.dataset_download("elainematthews/fakeddit")
-    base_path = os.path.join(path, "multimodal_only_samples")
-    
-    train_path = os.path.join(base_path, "multimodal_train.tsv")
-    test_path = os.path.join(base_path, "multimodal_test_public.tsv")
-    val_path = os.path.join(base_path, "multimodal_val.tsv")
+    base_path = "/kaggle/input/fakeddit-dataset/multimodal_only_samples"
+    train_path = f"{base_path}/multimodal_train.tsv"
+    test_path = f"{base_path}/multimodal_test_public.tsv"
+    val_path = f"{base_path}/multimodal_val.tsv"
 
     df_train = pd.read_csv(train_path, sep='\t', usecols=["clean_title", "2_way_label"])
     df_test = pd.read_csv(test_path, sep='\t', usecols=["clean_title", "2_way_label"])
     df_val = pd.read_csv(val_path, sep='\t', usecols=["clean_title", "2_way_label"])
 
+    # Concatenate all splits
     df = pd.concat([df_train, df_test, df_val], ignore_index=True)
 
+    # Drop missing
     df.dropna(subset=["clean_title", "2_way_label"], inplace=True)
 
+    # Clean text
     X_raw = [clean_text(text) for text in df["clean_title"]]
     y = df["2_way_label"].astype(int).values
 
+    # Vectorize
     X_tfidf, vectorizer = vectorize_texts(X_raw)
 
+    # Feature selection
     selector = SelectKBest(score_func=chi2, k=10000)
     X_selected = selector.fit_transform(X_tfidf, y)
 

@@ -10,7 +10,7 @@ import pandas as pd
 from models import ( logistic_regression, naive_bayes,
                     random_forest, svm, #xgb , deepforest ,catboost
                     )
-from optimizers import gbo, dgo, saro , ga #, pso
+from optimizers import gbo, dgo, saro , ga , hso #, pso
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
@@ -42,6 +42,7 @@ def run_experiments():
         #("DGO", dgo.optimize),
         ("GA", ga.optimize),
         ("GBO", gbo.optimize),
+        #("HSO", hso.optimize),
         #("SARO", saro.optimize),
     ]
 

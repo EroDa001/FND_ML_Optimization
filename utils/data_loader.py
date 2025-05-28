@@ -8,11 +8,11 @@ from sklearn.model_selection import train_test_split
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from experiments.config import RANDOM_SEED, TEST_SIZE, VAL_SIZE
-from utils import Data1 , instagram , Data2 , Data3
+from utils import Data1 , instagram , Data2 , Data3 , Data4
 
 
 def load_data(name):
-    assert name in ["instagram", "Data1", "Data2" , "Data3"], "Dataset not found"
+    assert name in ["instagram", "Data1", "Data2" , "Data3", "Data4"], "Dataset not found"
     if name == "instagram":
         X, y = instagram.load_data()
     else:
