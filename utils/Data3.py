@@ -1,3 +1,4 @@
+import kagglehub
 import os
 import pandas as pd
 import numpy as np
@@ -8,11 +9,24 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest, chi2
 
-# https://data.mendeley.com/datasets/zwfdmp5syg/1   find the dataset here 
-
 import nltk
 # nltk.download("stopwords")
 # nltk.download("wordnet")
+
+columns = [
+    'id', 'label', 'text', 'subject', 'speaker', 'job title',
+    'state info', 'party', 'barely true', 'false', 'half true',
+    'mostly true', 'pants on fire', 'context'
+]
+
+label_map = {
+    'pants-fire': -3,
+    'false': -2,
+    'barely-true': -1,
+    'half-true': 1,
+    'mostly-true': 2,
+    'true': 3
+}
 
 def clean_text(text):
     text = BeautifulSoup(text, "html.parser").get_text()
@@ -29,7 +43,7 @@ def vectorize_texts(texts):
         return text.split()
 
     vectorizer = TfidfVectorizer(
-        #max_features=512,
+        # max_features=512,
         tokenizer=identity_tokenizer,
         use_idf=True,
         norm="l2",
@@ -40,28 +54,26 @@ def vectorize_texts(texts):
     return X, vectorizer
 
 def load_data():
-    data_path = "/home/moodyblues/Desktop/Projects Z/master/data/data2.csv"
-    df = pd.read_csv(data_path, encoding="utf-8")
+    path = kagglehub.dataset_download("mrigendraagrawal/liar-dataset")
+    train_path = os.path.join(path, "liar_dataset", "train.tsv")
+    valid_path = os.path.join(path, "liar_dataset", "valid.tsv")
+    test_path  = os.path.join(path, "liar_dataset", "test.tsv")
 
-    # Drop the subcategory column
-    if "subcategory" in df.columns:
-        df.drop(columns=["subcategory"], inplace=True)
+    train = pd.read_csv(train_path, sep='\t', header=None, names=columns)
+    valid = pd.read_csv(valid_path, sep='\t', header=None, names=columns)
+    test  = pd.read_csv(test_path,  sep='\t', header=None, names=columns)
 
-    # Drop rows with missing title or text
-    df.dropna(subset=["title", "text"], inplace=True)
-    df.drop_duplicates(subset=["title", "text"], inplace=True)
+    df = pd.concat([train, valid, test], ignore_index=True)
+    df.dropna(subset=["text", "label"], inplace=True)
+    df["label"] = df["label"].map(label_map)
+    df.dropna(subset=["label"], inplace=True)
+    df["label"] = df["label"].astype(int)
 
-    # Combine title and text
-    df["title_text"] = df["title"].fillna("") + " " + df["text"].fillna("")
-
-    # Clean the text
-    X_raw = [clean_text(t) for t in df["title_text"]]
+    X_raw = [clean_text(t) for t in df["text"]]
     y = df["label"].values
 
-    # Vectorize
     X_tfidf, vectorizer = vectorize_texts(X_raw)
 
-    # Feature selection
     selector = SelectKBest(score_func=chi2, k=10000)
     X_selected = selector.fit_transform(X_tfidf, y)
 
