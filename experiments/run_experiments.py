@@ -122,7 +122,7 @@ def run_experiments():
 
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"results/logs/experiment_results_{timestamp}.csv"
+    output_file = f"results/logs/experiment_results_{dataset}_{timestamp}.csv"
 
     df_results = pd.DataFrame(results)
     df_results.to_csv(output_file, index=False)
