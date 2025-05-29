@@ -40,12 +40,39 @@ def vectorize_texts(texts):
 def load_data():
     path = kagglehub.dataset_download("abhinavkrjha/fake-news-challenge")
 
-    # Load bodies and stances
-    train_bodies = pd.read_csv(os.path.join(path, "train_bodies.csv"))
-    train_stances = pd.read_csv(os.path.join(path, "train_stances.csv"))
+    # Load all stance and body files
+    stance_files = [
+        "train_stances.csv",
+        "competition_test_stances_unlabeled.csv",
+        "test_stances_unlabeled.csv"
+    ]
+
+    body_files = [
+        "train_bodies.csv",
+        "competition_test_bodies.csv",
+        "test_bodies.csv"
+    ]
+
+    # Load and concatenate stance files
+    stances = pd.concat(
+        [pd.read_csv(os.path.join(path, fname)) for fname in stance_files],
+        ignore_index=True
+    )
+
+    # Load and concatenate body files
+    bodies = pd.concat(
+        [pd.read_csv(os.path.join(path, fname)) for fname in body_files],
+        ignore_index=True
+    )
+
+    # Output structure confirmation
+    print("Stances shape:", stances.shape)
+    print("Bodies shape:", bodies.shape)
+    print("Stances columns:", stances.columns)
+    print("Bodies columns:", bodies.columns)
 
     # Only use labeled training data
-    merged = pd.merge(train_stances, train_bodies, on="Body ID", how="left")
+    merged = pd.merge(stances, bodies, on="Body ID", how="left")
     merged.dropna(subset=["Headline", "articleBody", "Stance"], inplace=True)
 
     # Combine headline and body

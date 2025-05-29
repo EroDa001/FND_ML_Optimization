@@ -1,17 +1,20 @@
-import pandas as pd
 import os
+import pandas as pd
 import re
 from bs4 import BeautifulSoup
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_selection import SelectKBest, chi2
+import kagglehub
 
 # Download NLTK resources
 nltk.download('stopwords')
-nltk.download('vader_lexicon')
+nltk.download('wordnet')
 
-# Define cleaning and sentiment functions
+# Define text cleaning function
 def clean_text(text):
     text = BeautifulSoup(str(text), "html.parser").get_text()
     text = text.lower()
@@ -26,6 +29,7 @@ def clean_text(text):
     stemmed = [ps.stem(word) for word in filtered_tokens]
     return " ".join(stemmed)
 
+# Define sentiment classification
 def compute_sentiment(text, sia):
     score = sia.polarity_scores(text)['compound']
     if score < 0:
@@ -35,31 +39,52 @@ def compute_sentiment(text, sia):
     else:
         return 0.5
 
-# Load and preprocess dataset
-def preprocess_covid_tweets():
-    # Replace 'your_directory_path' with the path where your CSV files are located
-    base_path = 'your_directory_path'
+# Identity tokenizer
+def identity_tokenizer(text):
+    return text.split()
+
+# Define load_data function
+def load_data():
+    path = kagglehub.dataset_download("arunavakrchakraborty/covid19-twitter-dataset")
+
     files = [
         "Covid-19 Twitter Dataset (Apr-Jun 2020).csv",
         "Covid-19 Twitter Dataset (Apr-Jun 2021).csv",
         "Covid-19 Twitter Dataset (Aug-Sep 2020).csv"
     ]
-    
+
     dfs = []
     for file in files:
-        file_path = os.path.join(base_path, file)
+        file_path = os.path.join(path, file)
         df = pd.read_csv(file_path, encoding="utf-8")
+        if "Original Tweet" not in df.columns:
+            continue
         df = df[["Original Tweet"]].dropna()
         df["cleaned_tweet"] = df["Original Tweet"].apply(clean_text)
         dfs.append(df)
-    
+
     combined_df = pd.concat(dfs, ignore_index=True)
-    
+
     sia = SentimentIntensityAnalyzer()
     combined_df["sentiment"] = combined_df["cleaned_tweet"].apply(lambda x: compute_sentiment(x, sia))
-    
-    return combined_df
 
-# Run the preprocessing
-covid_tweets_df = preprocess_covid_tweets()
-print(covid_tweets_df.head())
+    X_raw = combined_df["cleaned_tweet"].tolist()
+    y = combined_df["sentiment"].values
+
+    vectorizer = TfidfVectorizer(
+        tokenizer=identity_tokenizer,
+        use_idf=True,
+        norm="l2",
+        smooth_idf=True,
+        ngram_range=(1, 2)
+    )
+    X_tfidf = vectorizer.fit_transform(X_raw)
+
+    selector = SelectKBest(score_func=chi2, k=10000)
+    X_selected = selector.fit_transform(X_tfidf, y)
+
+    print("raw:", len(X_raw))
+    print("tfidf:", X_tfidf.shape)
+    print("selected:", X_selected.shape)
+
+    return X_selected, y
