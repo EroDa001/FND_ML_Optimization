@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 
 from models import ( logistic_regression, naive_bayes,
-                    random_forest, svm, xgb #,catboost ,  deepforest
+                    random_forest, svm, xgb ,catboost ,  deepforest
                     )
 from optimizers import gbo, dgo, saro , ga , hso 
 from utils.data_loader import load_data
@@ -16,7 +16,7 @@ from utils.metrics import compute_metrics
 
 
 def run_experiments():
-    dataset = "Data1"
+    dataset = "Data5"
     (
         X_final_train,
         y_final_train,
@@ -30,11 +30,11 @@ def run_experiments():
 
     models = [
         ("SVM", svm),
-        #("CatBoost", catboost),
+        ("CatBoost", catboost),
         ("RandomForest", random_forest),
         ("XGBoost", xgb),
         ("LogisticRegression", logistic_regression),
-        #("DeepForest", deepforest),
+        ("DeepForest", deepforest),
         ("NaiveBayes", naive_bayes),
     ]
     optimizers = [

@@ -38,12 +38,12 @@ def vectorize_texts(texts):
     return X, vectorizer
 
 def load_data():
-    path = kagglehub.dataset_download("elainematthews/fakeddit")
+    path = kagglehub.dataset_download("vanshikavmittal/fakeddit-dataset")
     base_path = os.path.join(path, "multimodal_only_samples")
     
     train_path = os.path.join(base_path, "multimodal_train.tsv")
     test_path = os.path.join(base_path, "multimodal_test_public.tsv")
-    val_path = os.path.join(base_path, "multimodal_val.tsv")
+    val_path = os.path.join(base_path, "multimodal_validate.tsv")
 
     df_train = pd.read_csv(train_path, sep='\t', usecols=["clean_title", "2_way_label"])
     df_test = pd.read_csv(test_path, sep='\t', usecols=["clean_title", "2_way_label"])
