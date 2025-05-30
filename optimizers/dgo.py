@@ -50,7 +50,7 @@ def optimize(
             model = module.create_model(params)
             model.fit(X_train, y_train)
             y_pred = model.predict(X_val)
-            score = f1_score(y_val, y_pred)  
+            score = f1_score(y_val, y_pred, average='macro')  # or 'weighted'
             scores.append(score)
         return np.array(scores)
 

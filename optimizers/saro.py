@@ -40,9 +40,10 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         params = decode_solution(sol)
         model = module.create_model(params)
         model.fit(X_train, y_train)
-        preds = model.predict(X_val)
-        f1 = f1_score(y_val, preds)
+        y_pred = model.predict(X_val)
+        f1 = f1_score(y_val, y_pred, average='macro')  # or 'weighted' if preferred
         return -f1  # Minimization in Mealpy
+
 
     bounds = FloatVar(lb=tuple(lb), ub=tuple(ub), name="hyperparams")
     problem = {

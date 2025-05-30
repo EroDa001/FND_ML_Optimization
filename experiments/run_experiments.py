@@ -8,9 +8,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pandas as pd
 
 from models import ( logistic_regression, naive_bayes,
-                    random_forest, svm, #xgb , deepforest ,catboost
+                    random_forest, svm, xgb #,catboost ,  deepforest
                     )
-from optimizers import gbo, dgo, saro , ga , hso #, pso
+from optimizers import gbo, dgo, saro , ga , hso 
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
@@ -31,19 +31,19 @@ def run_experiments():
     models = [
         ("SVM", svm),
         #("CatBoost", catboost),
-        #("RandomForest", random_forest),
-        #("XGBoost", xgb),
-        #("LogisticRegression", logistic_regression),
+        ("RandomForest", random_forest),
+        ("XGBoost", xgb),
+        ("LogisticRegression", logistic_regression),
         #("DeepForest", deepforest),
         ("NaiveBayes", naive_bayes),
     ]
     optimizers = [
         ("Baseline", None),
-        #("DGO", dgo.optimize),
-        ("GA", ga.optimize),
+        #("GA", ga.optimize),
         ("GBO", gbo.optimize),
-        #("HSO", hso.optimize),
-        #("SARO", saro.optimize),
+        ("HSO", hso.optimize),
+        ("SARO", saro.optimize),
+        ("DGO", dgo.optimize),
     ]
 
     results = []
@@ -126,8 +126,14 @@ def run_experiments():
     output_file = f"results/logs/experiment_results_{dataset}_{timestamp}.csv"
 
     df_results = pd.DataFrame(results)
+    df_results = pd.DataFrame(results)
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
     df_results.to_csv(output_file, index=False)
     print(f"Experiments completed. Results saved to {output_file}")
+
 
 
 if __name__ == "__main__":
