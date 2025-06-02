@@ -17,38 +17,41 @@ def create_model(params):
 
 def default_params():
     return {
-        "n_estimators": 2,
-        "max_layers": 10,
-        "n_trees": 100,
-        "min_samples_leaf": 1,
+        "n_estimators": 1,             
+        "max_layers": 5,               
+        "n_trees": 50,                 
+        "min_samples_leaf": 5,         
     }
-
 
 def param_space():
     return [
         {
             "name": "n_estimators",
             "type": "categorical",
-            "categories": list(range(1, 5)),  
+            "categories": [1, 2],
         },
         {
             "name": "max_layers",
             "type": "categorical",
-            "categories": list(range(3, 21)),  
+            "categories": list(range(3, 8)),  
         },
         {
             "name": "n_trees",
             "type": "categorical",
-            "categories": list(range(50, 301, 50)),  
+            "categories": [50, 100, 150],     
         },
         {
             "name": "min_samples_leaf",
             "type": "categorical",
-            "categories": [1, 2, 5, 10],
+            "categories": [2, 5, 10],         
         },
     ]
+
 
 
 def evaluate(model, X_val, y_val):
     y_pred = model.predict(X_val)
     return accuracy_score(y_val, y_pred)
+
+
+

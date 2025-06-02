@@ -56,7 +56,7 @@ def load_data():
     df["title_text"] = df["title"].fillna("") + " " + df["text"].fillna("")
 
     # Encode labels: 1 for real, 0 for fake
-    df["label"] = df["Ground Label"].apply(lambda x: 1 if str(x).strip().lower() == "real" else 0)
+    df["label"] = df["Ground Label"].apply(lambda x: 1 if str(x).strip().lower() == "true" else 0)
 
     # Clean combined text
     X_raw = [clean_text(t) for t in df["title_text"]]

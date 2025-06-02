@@ -17,7 +17,7 @@ def create_model(params):
 
 def default_params():
     return {
-        "n_estimators": 100,
+        "n_estimators": 50,
         "max_depth": None,
         "min_samples_split": 2,
         "min_samples_leaf": 1,

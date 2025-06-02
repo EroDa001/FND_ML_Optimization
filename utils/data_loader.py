@@ -16,7 +16,7 @@ def load_data(name):
     if name == "instagram":
         X, y = instagram.load_data()
     else:
-        X, y = Data5.load_data()
+        X, y = Data2.load_data()
 
     X_temp, X_final_test, y_temp, y_final_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y

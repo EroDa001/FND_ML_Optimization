@@ -4,9 +4,9 @@ from experiments.config import GB_MAX_ITER ,GB_POP_SIZE
 
 def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
     space = module.param_space()
-    NT = 6  # number of groups
-    NP = 5  # number of schedules per group
-    max_seasons = 10
+    NT = 4  # number of groups
+    NP = 3  # number of schedules per group
+    max_seasons = 5
     optimal_found = False
 
     groups = []

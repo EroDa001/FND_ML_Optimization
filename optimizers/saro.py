@@ -56,7 +56,7 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         epoch=SARO_EPOCHS, 
         pop_size=SARO_POP_SIZE, 
         se=0.9, 
-        mu=11 
+        mu=7 
         )
 
     best = model.solve(problem)
@@ -72,6 +72,3 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         print(f"Best CV F1-score: {-best.target.fitness:.4f}")
 
     return best_model, best_params, -best.target.fitness
-
-
-

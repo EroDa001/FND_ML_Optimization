@@ -23,6 +23,29 @@ class HideAndSeekOptimizer(Optimizer):
         if self.pop is None:
             self.pop = self.generate_population(self.pop_size)
 
+    def train(self):
+        self.initialize_variables()
+        self.initialization()
+        self.update_global_best()
+        no_improvement_count = 0
+        prev_best = self.g_best.target
+
+        for epoch in range(self.epoch):
+            self.evolve(epoch)
+            self.update_global_best()
+
+            if self.g_best.target >= prev_best - 1e-8:  # Consider float tolerance
+                no_improvement_count += 1
+            else:
+                no_improvement_count = 0
+                prev_best = self.g_best.target
+
+            if no_improvement_count >= 3:
+                if self.verbose:
+                    print(f"Early stopping at epoch {epoch+1} due to no improvement.")
+                break
+
+
     def evolve(self, epoch):
         epsilon = 1.0 - epoch / self.epoch
 

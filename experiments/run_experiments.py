@@ -7,16 +7,21 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import pandas as pd
 
-from models import ( logistic_regression, naive_bayes,
-                    random_forest, svm, xgb ,catboost ,  deepforest
-                    )
-from optimizers import gbo, dgo, saro , ga , hso 
+from models import (
+    logistic_regression, naive_bayes, random_forest,
+    svm, xgb, catboost, deepforest
+)
+from optimizers import gbo, dgo, saro, ga, hso
 from utils.data_loader import load_data
 from utils.metrics import compute_metrics
 
 
+def to_dense(X):
+    return X.toarray() if hasattr(X, "toarray") else X
+
+
 def run_experiments():
-    dataset = "Data5"
+    dataset = "Data2"
     (
         X_final_train,
         y_final_train,
@@ -29,14 +34,15 @@ def run_experiments():
     ) = load_data(dataset)
 
     models = [
-        ("SVM", svm),
+        #("SVM", svm),
+        #("NaiveBayes", naive_bayes),
+        #("DeepForest", deepforest),
         ("CatBoost", catboost),
-        ("RandomForest", random_forest),
-        ("XGBoost", xgb),
-        ("LogisticRegression", logistic_regression),
-        ("DeepForest", deepforest),
-        ("NaiveBayes", naive_bayes),
+        #("RandomForest", random_forest),
+        #("XGBoost", xgb),
+        #("LogisticRegression", logistic_regression),
     ]
+
     optimizers = [
         ("Baseline", None),
         #("GA", ga.optimize),
@@ -49,14 +55,18 @@ def run_experiments():
     results = []
 
     for model_name, model_module in models:
-
         print(f"Running {model_name} with default parameters, no optimizer...")
+
+        
+        if model_name == "DeepForest":
+            X_opt_train = to_dense(X_opt_train)
+            X_opt_val = to_dense(X_opt_val)
+            X_final_test = to_dense(X_final_test)
 
         time_start = time.time()
         baseline_model = model_module.create_model(model_module.default_params())
         baseline_model.fit(X_opt_train, y_opt_train)
-        time_taken = time.time()
-        time_taken = time_taken - time_start
+        time_taken = time.time() - time_start
 
         print(
             f"Running {model_name} with default parameters, no optimizer... done in {time_taken:.2f} seconds"
@@ -66,6 +76,7 @@ def run_experiments():
             ("Train", X_opt_train, y_opt_train),
             ("Test", X_final_test, y_final_test),
         ]:
+            X = to_dense(X) if model_name == "DeepForest" else X
             y_pred = baseline_model.predict(X)
             y_prob = (
                 baseline_model.predict_proba(X)
@@ -86,22 +97,29 @@ def run_experiments():
                 }
             )
 
-
         for opt_name, optimizer in optimizers[1:]:
             print(f"Running {model_name} with {opt_name} optimizer...")
             time_start = time.time()
+
             best_model, best_params, best_score = optimizer(
-                model_module, X_opt_train, y_opt_train, X_opt_val, y_opt_val
+                model_module,
+                to_dense(X_opt_train) if model_name == "DeepForest" else X_opt_train,
+                y_opt_train,
+                to_dense(X_opt_val) if model_name == "DeepForest" else X_opt_val,
+                y_opt_val,
             )
+
             time_end = time.time()
             time_taken = time_end - time_start
             print(
                 f"Running {model_name} with {opt_name} optimizer... done in {time_taken:.2f} seconds"
             )
+
             for split_name, X, y in [
                 ("Train", X_opt_train, y_opt_train),
                 ("Test", X_final_test, y_final_test),
             ]:
+                X = to_dense(X) if model_name == "DeepForest" else X
                 y_pred = best_model.predict(X)
                 y_prob = (
                     best_model.predict_proba(X)
@@ -109,6 +127,7 @@ def run_experiments():
                     else None
                 )
                 mets = compute_metrics(y, y_pred, y_prob)
+                print(f"{model_name} | {opt_name} | {split_name} metrics: {mets}")
                 results.append(
                     {
                         "Model": model_name,
@@ -121,19 +140,13 @@ def run_experiments():
                     }
                 )
 
-
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = f"results/logs/experiment_results_{dataset}_{timestamp}.csv"
-
-    df_results = pd.DataFrame(results)
-    df_results = pd.DataFrame(results)
-
-    # Ensure the directory exists
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
+    df_results = pd.DataFrame(results)
     df_results.to_csv(output_file, index=False)
     print(f"Experiments completed. Results saved to {output_file}")
-
 
 
 if __name__ == "__main__":
