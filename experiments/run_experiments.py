@@ -9,7 +9,7 @@ import pandas as pd
 
 from models import (
     logistic_regression, naive_bayes, random_forest,
-    svm, xgb, catboost, deepforest
+    svm, xgb, catboost , lightgbm , deepforest
 )
 from optimizers import gbo, dgo, saro, ga, hso
 from utils.data_loader import load_data
@@ -21,7 +21,7 @@ def to_dense(X):
 
 
 def run_experiments():
-    dataset = "Data2"
+    dataset = "Data5"
     (
         X_final_train,
         y_final_train,
@@ -34,13 +34,14 @@ def run_experiments():
     ) = load_data(dataset)
 
     models = [
-        #("SVM", svm),
-        #("NaiveBayes", naive_bayes),
+        ("lightgbm", lightgbm),
         #("DeepForest", deepforest),
         ("CatBoost", catboost),
-        #("RandomForest", random_forest),
-        #("XGBoost", xgb),
-        #("LogisticRegression", logistic_regression),
+        ("SVM", svm),
+        ("NaiveBayes", naive_bayes),
+        ("RandomForest", random_forest),
+        ("XGBoost", xgb),
+        ("LogisticRegression", logistic_regression),
     ]
 
     optimizers = [

@@ -11,11 +11,13 @@ def create_model(params):
         learning_rate=params["learning_rate"],
         subsample=params["subsample"],
         rsm=params["colsample_bytree"],  # equivalent to colsample_bytree in CatBoost
-        loss_function="Logloss",
+        loss_function='MultiClass',
+        bootstrap_type='Bernoulli',  # required to support subsample
         random_seed=RANDOM_SEED,
-        verbose=0,  # suppress training output
+        verbose=0,
         thread_count=-1,
     )
+
 
 
 def default_params():
