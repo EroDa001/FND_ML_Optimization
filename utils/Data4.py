@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import re
@@ -24,7 +25,7 @@ def clean_text(text):
 def vectorize_texts(texts):
     def identity_tokenizer(text):
         return text.split()
-    
+
     vectorizer = TfidfVectorizer(
         tokenizer=identity_tokenizer,
         use_idf=True,
@@ -36,34 +37,35 @@ def vectorize_texts(texts):
     return X, vectorizer
 
 def load_data():
-    base_path = "/kaggle/input/fakeddit-dataset/multimodal_only_samples"
-    train_path = f"{base_path}/multimodal_train.tsv"
-    test_path = f"{base_path}/multimodal_test_public.tsv"
-    val_path = f"{base_path}/multimodal_val.tsv"
+    base_path = "/home/moodyblues/Desktop/Projects Z/master/data/data4"
+    files = [
+        "Constraint_English_Train - Sheet1.csv",
+        "Constraint_English_Val - Sheet1.csv",
+        "english_test_with_labels - Sheet1.csv"
+    ]
 
-    df_train = pd.read_csv(train_path, sep='\t', usecols=["clean_title", "2_way_label"])
-    df_test = pd.read_csv(test_path, sep='\t', usecols=["clean_title", "2_way_label"])
-    df_val = pd.read_csv(val_path, sep='\t', usecols=["clean_title", "2_way_label"])
+    all_X_raw = []
+    all_y = []
 
-    # Concatenate all splits
-    df = pd.concat([df_train, df_test, df_val], ignore_index=True)
+    for file in files:
+        path = os.path.join(base_path, file)
+        df = pd.read_csv(path)
+        df.dropna(subset=["tweet", "label"], inplace=True)
+        df.drop_duplicates(subset=["tweet"], inplace=True)
+        X_raw = [clean_text(t) for t in df["tweet"]]
+        y_raw = df["label"].map({"fake": 0, "real": 1}).values
+        all_X_raw.extend(X_raw)
+        all_y.extend(y_raw)
 
-    # Drop missing
-    df.dropna(subset=["clean_title", "2_way_label"], inplace=True)
-
-    # Clean text
-    X_raw = [clean_text(text) for text in df["clean_title"]]
-    y = df["2_way_label"].astype(int).values
-
-    # Vectorize
-    X_tfidf, vectorizer = vectorize_texts(X_raw)
+    # Vectorization
+    X_tfidf, vectorizer = vectorize_texts(all_X_raw)
 
     # Feature selection
     selector = SelectKBest(score_func=chi2, k=10000)
-    X_selected = selector.fit_transform(X_tfidf, y)
+    X_selected = selector.fit_transform(X_tfidf, all_y)
 
-    print("raw:", len(X_raw))
+    print("raw:", len(all_X_raw))
     print("tfidf:", X_tfidf.shape)
     print("selected:", X_selected.shape)
 
-    return X_selected, y
+    return X_selected, np.array(all_y)

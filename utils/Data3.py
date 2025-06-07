@@ -58,7 +58,7 @@ def load_data():
 
     X_tfidf, vectorizer = vectorize_texts(X_raw)
 
-    selector = SelectKBest(score_func=chi2, k=10000)
+    selector = SelectKBest(score_func=chi2, k=1000)
     X_selected = selector.fit_transform(X_tfidf, y)
 
     print("raw:", len(X_raw))
