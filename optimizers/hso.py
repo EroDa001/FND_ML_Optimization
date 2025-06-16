@@ -86,23 +86,24 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
             ub.append(len(param["categories"]) - 1)
             cat_category_lists.append(param["categories"])
 
-    def decode_solution(solution):
+    def decode_solution(sol):
         params = {}
         for i, param in enumerate(space):
             if param["type"] == "continuous":
-                params[param["name"]] = float(solution[i])
-            elif param["type"] == "categorical":
-                idx = int(round(solution[i]))
-                idx = max(0, min(idx, len(cat_category_lists[i]) - 1))
+                params[param["name"]] = round(float(sol[i]), 4)
+            else:
+                idx = int(round(sol[i]))
                 params[param["name"]] = cat_category_lists[i][idx]
         return params
 
-    def fitness(solution):
-        params = decode_solution(solution)
+    def fitness_func(sol):
+        params = decode_solution(sol)
         model = module.create_model(params)
         model.fit(X_train, y_train)
-        preds = model.predict(X_val)
-        return -accuracy_score(y_val, preds)  # Minimization
+        y_pred = model.predict(X_val)
+        f1 = f1_score(y_val, y_pred, average='macro')  
+        return -f1  
+
 
     problem = {
         "obj_func": fitness,

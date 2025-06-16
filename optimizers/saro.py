@@ -41,8 +41,8 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         model = module.create_model(params)
         model.fit(X_train, y_train)
         y_pred = model.predict(X_val)
-        f1 = f1_score(y_val, y_pred, average='macro')  # or 'weighted' if preferred
-        return -f1  # Minimization in Mealpy
+        f1 = f1_score(y_val, y_pred, average='macro')  
+        return -f1  
 
 
     bounds = FloatVar(lb=tuple(lb), ub=tuple(ub), name="hyperparams")

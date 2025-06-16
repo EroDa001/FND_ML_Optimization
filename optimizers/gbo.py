@@ -30,22 +30,26 @@ def optimize(module, X_train, y_train, X_val, y_val, verbose=True):
         })
 
     def decode_solution(sol):
-        decoded = {}
+        params = {}
         for i, param in enumerate(space):
-            if param['type'] == 'continuous':
-                decoded[param['name']] = sol[i]
-            elif param['type'] == 'categorical':
-                decoded[param['name']] = param['categories'][int(round(sol[i]))]
-        return decoded
+            if param["type"] == "continuous":
+                params[param["name"]] = round(float(sol[i]), 4)
+            else:
+                idx = int(round(sol[i]))
+                params[param["name"]] = cat_category_lists[i][idx]
+        return params
 
-    def evaluate(sol):
+    def fitness_func(sol):
         params = decode_solution(sol)
         model = module.create_model(params)
         model.fit(X_train, y_train)
-        return 1.0 - model.score(X_val, y_val)  # minimization
+        y_pred = model.predict(X_val)
+        f1 = f1_score(y_val, y_pred, average='macro')  
+        return -f1  
+
 
     def train(schedule, method):
-        return schedule  # placeholder for training functions
+        return schedule  
 
     for season in range(max_seasons):
         print(f"Season {season + 1}/{max_seasons}")
